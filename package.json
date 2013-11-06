@@ -1,0 +1,46 @@
+{
+    "name": "clocks",
+    "version": "0.0.1",
+    "description": "Counting down and up clocks",
+    "main": "core/playit.core.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/misha-panyushkin/clocks.js.git"
+    },
+    "keywords": [
+        "clocks",
+        "counter",
+        "countdown",
+        "countup"
+    ],
+    "author": "Misha Panyushkin <misha.panyushkin@gmail.com>",
+    "contributors": [
+        {
+            "name": "Misha Panyushkin",
+            "email": "misha.panyushkin@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/misha-panyushkin/clocks.js/issues"
+    },
+    "engines": {
+        "node": ">= 0.8.0"
+    },
+    "devDependencies": {
+        "grunt-curl":           "~1.1.0",
+        "require":              "*",
+
+        "grunt-contrib-jshint": "~0.6.0",
+        "grunt-contrib-uglify": "~0.2.5",
+        "grunt-contrib-clean":  "~0.5.0",
+        "grunt-contrib-copy":   "~0.4.1",
+        "grunt-jquery-builder": "~0.1.1",
+        "grunt":                "~0.4.1",
+
+        "jquery":               "*"
+    }
+}
