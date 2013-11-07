@@ -1,10 +1,13 @@
-#clocks                 {background-color: #84CAE5; border-radius: 5px; clear: both;
-                        text-align: center; margin: 15px auto; max-width: 230px; color:#fff}
+#clocks                 {text-align: center}
 
-#clocks .marks          {display: inline-block; padding: 0 5px;}
-#clocks .marks div      {margin-top: 9px}
-#clocks .marks span     {background-color:#fff; color:#3F8DAC; margin:2px; border-radius:3px;
+.clocks                 {background-color: #84CAE5; border-radius: 5px;
+                        text-align: center; color:#fff;
+                        display: inline-block}
+
+.clocks .marks          {display: inline-block; padding: 0 5px;}
+.clocks .marks header   {margin-top: 9px}
+.clocks .marks span     {background-color:#fff; color:#3F8DAC; margin:2px; border-radius:3px;
                         padding: 3px 5px 3px 5px;
                         vertical-align: middle;}
-#clocks .marks p        {font-size: .7em;
+.clocks .marks footer   {font-size: .8em;
                         margin: 3px;}
