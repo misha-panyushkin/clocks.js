@@ -53,12 +53,46 @@ $(function () {
     /*
      * Constructor function.
      * */
-    function CDC ($set, time_to_go) {
+    function CDC ($set) {
         this.$c = $("<article/>").attr("class", "clocks");
         createMarks.call(this);
-        fillWithTime.call(this, time_to_go);
         this.$c.appendTo($set);
+        this.status = "idle";
     }
+
+    CDC.prototype = {
+        fill:   function (ttg) {
+            if (ttg) {
+                this.stop();
+                fillWithTime.call(this, ttg);
+            }
+        },
+        start:  function (ttg) {
+            this.fill(ttg);
+            this.resume();
+        },
+        stop:   function (ttg) {
+            if (this.status === "stopped") return;
+            this.status = "stopped";
+            this.fill(ttg);
+            clearTimeout(this.to);
+        },
+        resume: function () {
+            if (this.status === "counting") return;
+            this.status = "counting";
+            this.last = new Date().getTime();
+            this.count();
+        },
+
+        getTime: function () {
+            var that = this,
+                remain = 0;
+            tic_mark.forEach(function (v) {
+                remain += that[v].v*tic_const[v]
+            });
+            return remain*1000;
+        }
+    };
 
     /*
      * Defining a prototype methods collection.
@@ -85,16 +119,13 @@ $(function () {
 
             // 2. Checking.
             if (full) {
-
-                this.finished = !a[i-1];
-
-                if (this.finished) {
-                    // Stop counter!
+                if (!a[i-1]) {
+                    this.status = "finished";
                 } else {
                     this["set" + a[i-1].toUpperCase()](full);
                 }
 
-                if (this.finished) {
+                if (this.status === "finished") {
                     balance = 0;
                 }
             }
@@ -126,49 +157,6 @@ $(function () {
         return arr;
     };
 
-    /*
-    CDC.prototype = {
-        fill:   function (ttg) {
-            if (ttg) {
-                this.stop();
-                fillWithTime.call(ttg);
-            }
-        },
-        start:  function (ttg) {
-
-        },
-        stop:   function () {},
-        resume: function () {}
-    };*/
-
-    CDC.prototype.start = function (ttg) {
-
-        if (ttg) {
-            this.stop();
-            fillWithTime.call(this, ttg);
-        }
-
-        this.resume();
-    };
-
-    CDC.prototype.resume = function () {
-        this.last = new Date().getTime();
-        this.count();
-    };
-
-    CDC.prototype.stop = function () {
-        this.stopped = true;
-        clearTimeout(this.to);
-        return (function () {
-            var that = this,
-                remain = 0;
-            tic_mark.forEach(function (v) {
-                remain += that[v].v*tic_const[v]
-            });
-            return remain*1000;
-        }).call(this);
-    };
-
     CDC.prototype.count = function (ms) {
         var that = this;
         ms = ms || one_sec;
@@ -183,18 +171,18 @@ $(function () {
             } else if (ts > one_sec) {
                 // setS(amount) for need amount and if needed add timeout for balance.
                 fS = Math.floor(ts/one_sec);
-                console.log("2: " + balance + " : " + fS);
                 that.setS(fS);
                 balance = one_sec - ts % one_sec;
                 that.last += fS*one_sec;
+                console.log("2: " + balance + " : " + fS);
             } else {
-                console.log("3: " + balance);
                 // setS() and start new second counter.
                 that.setS();
                 that.last = new Date().getTime();
+                console.log("3: " + balance);
             }
 
-            if (that.finished) {
+            if (that.status === "finished") {
                 clearTimeout(that.to);
             } else {
                 that.count(balance);
@@ -202,9 +190,9 @@ $(function () {
         }, ms);
     };
 
-    $.fn.CountDownClocks = function (ttg) {
-        var cl = new CDC(this, ttg);
-        cl.start();
+    $.fn.countDown = function (ttg) {
+        var cl = new CDC(this);
+        cl.start(ttg);
         return cl;
     };
 });
