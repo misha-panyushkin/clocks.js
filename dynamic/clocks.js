@@ -22,29 +22,77 @@ $(function () {
 
 
     /*
-     * Init function using in constructor call.
+     * Init functions using in constructor call.
      * */
-    function init (ttg) {
+    function fillWithTime (ttg) {
         var that = this;
         ttg /= 1000;
         tic_mark.forEach(function (mark) {
-            var time = parseInt(ttg / tic_const[mark]),
-                arr = that.int2arr(time);
-            that[mark] = {
-                v: time,
-                $e: $("<div>").attr("class", mark + " marks").append("<div><span><em>" + arr[0] + "</em></span><span><em>" + arr[1] + "</em></span></div>").append("<p>" + tic_labels[mark] + "</p>").appendTo(that.$c).find("em")
-            };
+            var arr;
+
+            that[mark].v = parseInt(ttg / tic_const[mark]);
+            arr = that.int2arr(that[mark].v);
+            that[mark].$e.html(function (i) {
+                return arr[i];
+            });
+
             ttg -= that[mark].v*tic_const[mark];
+        });
+    }
+
+    function createMarks () {
+        var that = this;
+        tic_mark.forEach(function (mark) {
+            that[mark] = {
+                v: 0,
+                $e: $("<section>").attr("class", mark + " marks").append("<header><span><em></em></span><span><em></em></span></header>").append("<footer>" + tic_labels[mark] + "</footer>").appendTo(that.$c).find("em")
+            };
         });
     }
 
     /*
      * Constructor function.
      * */
-    function CDC ($set, time_to_go) {
-        this.$c = $set;
-        init.call(this, time_to_go);
+    function CDC ($set) {
+        this.$c = $("<article/>").attr("class", "clocks");
+        createMarks.call(this);
+        this.$c.appendTo($set);
+        this.status = "idle";
     }
+
+    CDC.prototype = {
+        fill:   function (ttg) {
+            if (ttg) {
+                this.stop();
+                fillWithTime.call(this, ttg);
+            }
+        },
+        start:  function (ttg) {
+            this.fill(ttg);
+            this.resume();
+        },
+        stop:   function (ttg) {
+            if (this.status === "stopped") return;
+            this.status = "stopped";
+            this.fill(ttg);
+            clearTimeout(this.to);
+        },
+        resume: function () {
+            if (this.status === "counting") return;
+            this.status = "counting";
+            this.last = new Date().getTime();
+            this.count();
+        },
+
+        getTime: function () {
+            var that = this,
+                remain = 0;
+            tic_mark.forEach(function (v) {
+                remain += that[v].v*tic_const[v]
+            });
+            return remain*1000;
+        }
+    };
 
     /*
      * Defining a prototype methods collection.
@@ -60,6 +108,7 @@ $(function () {
 
             amount = (amount || 1);
 
+            // 1. Counting.
             full = Math.floor(amount / fI);
             balance = this[m].v - amount % fI;
 
@@ -68,17 +117,22 @@ $(function () {
                 full++; // Cause counter reached zero and goes below.
             }
 
+            // 2. Checking.
             if (full) {
-                if (i === 0 || !this["set" + a[i-1].toUpperCase()](full)) {
-                    return false;
+                if (!a[i-1]) {
+                    this.status = "finished";
                 } else {
-                    this[m].v = balance;
+                    this["set" + a[i-1].toUpperCase()](full);
                 }
-            } else {
-                this[m].v = balance;
+
+                if (this.status === "finished") {
+                    balance = 0;
+                }
             }
 
-            // Data visualization.
+            this[m].v = balance;
+
+            // 3. Visualizing.
             this.int2arr(this[m].v).forEach(function (v, i) {
 
                 that[m].$e.eq(i).html(function (i, old) {
@@ -90,36 +144,17 @@ $(function () {
                     }
                 });
             });
-
-            return true;
         };
     });
 
     /*
-    * System method.
-    * */
+     * System method.
+     * */
     CDC.prototype.int2arr = function (i) {
         var arr = i.toString().split("");
         if (arr.length == 1)
             arr.splice(0, 0, "0");
         return arr;
-    };
-
-    CDC.prototype.start = function () {
-        this.last = new Date().getTime();
-        this.count();
-    };
-
-    CDC.prototype.stop = function () {
-        clearTimeout(this.to);
-        return function () {
-            var that = this,
-                remain = 0;
-            tic_mark.forEach(function (v, i) {
-                remain += that[v].v*tic_const[i]
-            });
-            return remain;
-        }
     };
 
     CDC.prototype.count = function (ms) {
@@ -147,13 +182,17 @@ $(function () {
                 console.log("3: " + balance);
             }
 
-            that.count(balance);
+            if (that.status === "finished") {
+                clearTimeout(that.to);
+            } else {
+                that.count(balance);
+            }
         }, ms);
     };
 
-    $.fn.CountDownClocks = function (ttg) {
-        var cl = new CDC(this, ttg);
-        cl.start();
+    $.fn.countDown = function (ttg) {
+        var cl = new CDC(this);
+        cl.start(ttg);
         return cl;
     };
 });
