@@ -16,10 +16,10 @@ $(function () {
             ss: 1
         },
         tic_labels = {
-            dd: "дней",
-            hh: "часов",
-            mm: "минут",
-            ss: "секунд"
+            dd: "дни",
+            hh: "часы",
+            mm: "минуты",
+            ss: "секунды"
         },
         one_sec = 1000; // In milliseconds.
 
