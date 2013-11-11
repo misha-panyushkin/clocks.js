@@ -167,19 +167,16 @@ $(function () {
             if (ts < one_sec) {
                 // Not full second passed. Add timeout for balance.
                 balance = one_sec - ts;
-                console.log("1: " + balance);
             } else if (ts > one_sec) {
                 // setS(amount) for need amount and if needed add timeout for balance.
                 fS = Math.floor(ts/one_sec);
                 that.setS(fS);
                 balance = one_sec - ts % one_sec;
                 that.last += fS*one_sec;
-                console.log("2: " + balance + " : " + fS);
             } else {
                 // setS() and start new second counter.
                 that.setS();
                 that.last = new Date().getTime();
-                console.log("3: " + balance);
             }
 
             if (that.status === "finished") {
